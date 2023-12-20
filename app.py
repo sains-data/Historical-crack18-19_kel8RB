@@ -22,7 +22,8 @@ if uploaded_file is not None:
     st.image(img, caption='Uploaded Image.', use_column_width=True)
 
     # Resize the image to match the expected input shape of the model (150x150)
-    img_resized = img.resize((150, 150))
+    target_size = (150, 150)  # Adjust this to match the model's input shape
+    img_resized = img.resize(target_size)
 
     # Preprocess the resized image
     img_array = image.img_to_array(img_resized)
@@ -31,20 +32,25 @@ if uploaded_file is not None:
 
     # Make prediction and measure time
     start_time = time.time()
-    prediction = model.predict(img_array)
-    end_time = time.time()
+    try:
+        prediction = model.predict(img_array)
+        confidence = prediction[0][0]
+        end_time = time.time()
 
-    # Calculate accuracy
-    confidence = prediction[0][0]
-    if confidence > 0.5:
-        accuracy = confidence * 100
-    else:
-        accuracy = (1 - confidence) * 100
+        # Calculate accuracy
+        if confidence > 0.5:
+            accuracy = confidence * 100
+        else:
+            accuracy = (1 - confidence) * 100
 
-    # Ensure accuracy stays within 0-100% range
-    accuracy = min(95, max(0, accuracy))
+        # Ensure accuracy stays within 0-100% range
+        accuracy = min(95, max(0, accuracy))
 
-    # Display the result including accuracy and execution time
-    st.write(f"Prediction: {'Not Cracked' if confidence > 0.5 else 'Cracked'}")
-    st.write(f"Accuracy: {accuracy:.2f}%")
-    st.write(f"Execution Time: {end_time - start_time:.5f} seconds")
+        # Display the result including accuracy and execution time
+        st.write(f"Prediction: {'Not Cracked' if confidence > 0.5 else 'Cracked'}")
+        st.write(f"Accuracy: {accuracy:.2f}%")
+        st.write(f"Execution Time: {end_time - start_time:.5f} seconds")
+    
+    except Exception as e:
+        st.write("Error making prediction:")
+        st.write(str(e))  # Display the specific error message for debugging
